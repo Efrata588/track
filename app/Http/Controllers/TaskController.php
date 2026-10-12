@@ -11,13 +11,15 @@ class TaskController extends Controller
 {
     public function index(): Response
     {
-        $tasks = auth()->user()
+        $user= auth()->user();
+        $tasks=$user
             ->tasks()
             ->latest()
             ->get();
 
         return Inertia::render('Tasks/Index', [
             'tasks' => $tasks,
+            'username'=>$user->name,
         ]);
     }
 

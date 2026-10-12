@@ -7,6 +7,10 @@ defineProps({
         type: Array,
         required: true,
     },
+    username: {
+        type: String,
+        required: true,
+    },
 });
 
 const form = useForm({
@@ -15,6 +19,7 @@ const form = useForm({
     due_at: "",
 });
 
+const isCreateModalOpen = ref(false);
 const isEditModalOpen = ref(false);
 const selectedTask = ref(null);
 
@@ -24,6 +29,11 @@ const editForm = useForm({
     due_at: "",
 });
 
+function closeCreateModal() {
+    isCreateModalOpen.value = false;
+    form.reset();
+    form.clearErrors();
+}
 function startEditing(task) {
     selectedTask.value = task;
     editForm.title = task.title;
@@ -50,7 +60,7 @@ function saveTask() {
 
 function submit() {
     form.post("/tasks", {
-        onSuccess: () => form.reset(),
+        onSuccess: () => closeCreateModal(),
     });
 }
 
@@ -67,85 +77,119 @@ function destroy(task) {
     <Head title="My Tasks" />
 
     <main class="mx-auto max-w-4xl space-y-8 p-6">
-        <h1 class="text-3xl font-bold">My Tasks</h1>
+        <div class="flex items-center justify-between gap-4">
+            <div>
+                <h1 class="text-4xl font-bold text-blue-500">
+                    Welcome back, {{ username }}!
+                </h1>
+                <p class="mt-2 text-gray-500">
+                    Here's an overview of your tasks.
+                </p>
+            </div>
 
-        <section class="rounded-lg border p-6">
-            <h2 class="mb-4 text-xl font-semibold">Create a Task</h2>
+            <button
+                type="button"
+                @click="isCreateModalOpen = true"
+                class="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
+            >
+                + Add Task
+            </button>
+        </div>
 
-            <form @submit.prevent="submit" class="space-y-4">
-                <div>
-                    <label for="title" class="mb-1 block font-medium">
-                        Task title
-                    </label>
+        <section v-if="isCreateModalOpen" class="rounded-lg border p-6">
+            <div
+                class="w-full max-w-lg rounded-xl bg-white p-6 text-gray-900 shadow-xl"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="create-task-title"
+            >
+                <h2 class="mb-4 text-xl font-semibold">Create a Task</h2>
 
-                    <input
-                        id="title"
-                        v-model="form.title"
-                        type="text"
-                        required
-                        maxlength="255"
-                        class="w-full rounded-md border px-3 py-2"
-                        placeholder="e.g. Learn Laravel models"
-                    />
+                <form @submit.prevent="submit" class="space-y-4">
+                    <div>
+                        <label for="title" class="mb-1 block font-medium">
+                            Task title
+                        </label>
 
-                    <p
-                        v-if="form.errors.title"
-                        class="mt-1 text-sm text-red-600"
-                    >
-                        {{ form.errors.title }}
-                    </p>
-                </div>
+                        <input
+                            id="title"
+                            v-model="form.title"
+                            type="text"
+                            required
+                            maxlength="255"
+                            class="w-full rounded-md border px-3 py-2"
+                            placeholder="e.g. Learn Laravel models"
+                        />
 
-                <div>
-                    <label for="description" class="mb-1 block font-medium">
-                        Description (optional)
-                    </label>
+                        <p
+                            v-if="form.errors.title"
+                            class="mt-1 text-sm text-red-600"
+                        >
+                            {{ form.errors.title }}
+                        </p>
+                    </div>
 
-                    <textarea
-                        id="description"
-                        v-model="form.description"
-                        rows="3"
-                        class="w-full rounded-md border px-3 py-2"
-                        placeholder="What needs to be done?"
-                    ></textarea>
+                    <div>
+                        <label for="description" class="mb-1 block font-medium">
+                            Description (optional)
+                        </label>
 
-                    <p
-                        v-if="form.errors.description"
-                        class="mt-1 text-sm text-red-600"
-                    >
-                        {{ form.errors.description }}
-                    </p>
-                </div>
+                        <textarea
+                            id="description"
+                            v-model="form.description"
+                            rows="3"
+                            class="w-full rounded-md border px-3 py-2"
+                            placeholder="What needs to be done?"
+                        ></textarea>
 
-                <div>
-                    <label for="due_at" class="mb-1 block font-medium">
-                        Due date and time
-                    </label>
+                        <p
+                            v-if="form.errors.description"
+                            class="mt-1 text-sm text-red-600"
+                        >
+                            {{ form.errors.description }}
+                        </p>
+                    </div>
 
-                    <input
-                        id="due_at"
-                        v-model="form.due_at"
-                        type="datetime-local"
-                        required
-                        class="w-full rounded-md border px-3 py-2"
-                    />
+                    <div>
+                        <label for="due_at" class="mb-1 block font-medium">
+                            Due date and time
+                        </label>
 
-                    <p
-                        v-if="form.errors.due_at"
-                        class="mt-1 text-sm text-red-600"
-                    >
-                        {{ form.errors.due_at }}
-                    </p>
-                </div>
+                        <input
+                            id="due_at"
+                            v-model="form.due_at"
+                            type="datetime-local"
+                            required
+                            class="w-full rounded-md border px-3 py-2"
+                        />
 
-                <button
-                    type="submit"
-                    :disabled="form.processing"
-                    class="rounded-md bg-green-600 px-5 py-2 font-medium text-white disabled:opacity-50"
-                >
-                    {{ form.processing ? "Saving..." : "Create Task" }}
-                </button>
-            </form>
+                        <p
+                            v-if="form.errors.due_at"
+                            class="mt-1 text-sm text-red-600"
+                        >
+                            {{ form.errors.due_at }}
+                        </p>
+                    </div>
+
+                    <div class="flex justify-end gap-3">
+                        <button
+                            type="button"
+                            @click="isCreateModalOpen = false"
+                            class="rounded-md border border-gray-300 px-4 py-2 font-medium text-gray-700 hover:bg-gray-100"
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            type="submit"
+                            :disabled="form.processing"
+                            class="rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                        >
+                            {{ form.processing ? "Saving..." : "Create Task" }}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </section>
 
         <section>

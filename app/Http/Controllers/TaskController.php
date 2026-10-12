@@ -35,4 +35,46 @@ class TaskController extends Controller
             ->route('tasks.index')
             ->with('success', 'Task created successfully.');
     }
+    public function toggleCompletion(Request $request, int $task):RedirectResponse{
+        $task=$request->user()
+            ->tasks()
+            ->findOrFail($task);
+        
+        if($task->completed_at !== null){
+            $task->completed_at=null;
+        }else{
+            $task->completed_at=now();
+        }
+        $task->save();
+
+        return redirect()
+            ->route('tasks.index')
+            ->with('success','Task completion updated.');
+    }
+    public function update(Request $request, int $task): RedirectResponse{
+        $task=$request->user()
+            ->tasks()
+            ->findOrFail($task);
+
+        $validated=$request->validate([
+            'title'=>['required','string','max:255'],
+            'description'=>['nullable','string'],
+            'due_at'=>['required','date'],
+        ]);
+
+        $task->update($validated);
+        return redirect()
+            ->route('tasks.index')
+            ->with('success','Task updated successfully.');
+    }
+    public function destroy(Request $request,int $task): RedirectResponse{
+        $task=$request->user()
+            ->tasks()
+            ->findOrFail($task);
+
+        $task->delete();
+        return redirect()
+            ->route('tasks.index')
+            ->with('success','Task deleted successfully.');
+    }
 }

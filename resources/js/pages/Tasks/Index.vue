@@ -1,8 +1,8 @@
 <script setup>
 import { Head, useForm, router } from "@inertiajs/vue3";
-import { ref } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 
-defineProps({
+const props = defineProps({
     tasks: {
         type: Array,
         required: true,
@@ -23,17 +23,88 @@ const isCreateModalOpen = ref(false);
 const isEditModalOpen = ref(false);
 const selectedTask = ref(null);
 
+const now = ref(new Date());
+let clockInterval = null;
+
+onMounted(() => {
+    clockInterval = setInterval(() => {
+        now.value = new Date();
+    }, 30000);
+});
+
+onUnmounted(() => {
+    clearInterval(clockInterval);
+});
+
+function isSameDay(dateA, dateB) {
+    return (
+        dateA.getFullYear() === dateB.getFullYear() &&
+        dateA.getMonth() === dateB.getMonth() &&
+        dateA.getDate() === dateB.getDate()
+    );
+}
+
+function isPastDue(task) {
+    return new Date(task.due_at) < now.value;
+}
+
 const editForm = useForm({
     title: "",
     description: "",
     due_at: "",
 });
 
+const todaysTask = computed(() =>
+    props.tasks.filter(
+        (task) =>
+            !task.completed_at &&
+            isSameDay(new Date(task.due_at), now.value) &&
+            !isPastDue(task),
+    ),
+);
+
+const upcomingTask = computed(() =>
+    props.tasks.filter(
+        (task) =>
+            !task.completed_at &&
+            !isPastDue(task) &&
+            !isSameDay(new Date(task.due_at), now.value),
+    ),
+);
+
+const pastDueTasks = computed(() =>
+    props.tasks.filter((task) => !task.completed_at && isPastDue(task)),
+);
+
+const completed = computed(() =>
+    props.tasks.filter((task) => task.completed_at),
+);
+
+const taskCategories = computed(() => [
+    {
+        title: "Today",
+        tasks: todaysTask.value,
+    },
+    {
+        title: "Upcoming",
+        tasks: upcomingTask.value,
+    },
+    {
+        title: "Past Due",
+        tasks: pastDueTasks.value,
+    },
+    {
+        title: "Completed",
+        tasks: completed.value,
+    },
+]);
+
 function closeCreateModal() {
     isCreateModalOpen.value = false;
     form.reset();
     form.clearErrors();
 }
+
 function startEditing(task) {
     selectedTask.value = task;
     editForm.title = task.title;
@@ -65,11 +136,19 @@ function submit() {
 }
 
 function toggleCompletion(task) {
-    router.patch(`/tasks/${task.id}/completion`, {}, { preserveScroll: true });
+    router.patch(
+        `/tasks/${task.id}/completion`,
+        {},
+        {
+            preserveScroll: true,
+        },
+    );
 }
 
 function destroy(task) {
-    router.delete(`/tasks/${task.id}`, {}, { preserveScroll: true });
+    router.delete(`/tasks/${task.id}`, {
+        preserveScroll: true,
+    });
 }
 </script>
 
@@ -89,23 +168,29 @@ function destroy(task) {
 
             <button
                 type="button"
-                @click="isCreateModalOpen = true"
                 class="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
+                @click="isCreateModalOpen = true"
             >
                 + Add Task
             </button>
         </div>
 
-        <section v-if="isCreateModalOpen" class="rounded-lg border p-6">
+        <section
+            v-if="isCreateModalOpen"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/70 p-4"
+            @click.self="closeCreateModal"
+        >
             <div
                 class="w-full max-w-lg rounded-xl bg-white p-6 text-gray-900 shadow-xl"
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="create-task-title"
             >
-                <h2 class="mb-4 text-xl font-semibold">Create a Task</h2>
+                <h2 id="create-task-title" class="mb-4 text-xl font-semibold">
+                    Create a Task
+                </h2>
 
-                <form @submit.prevent="submit" class="space-y-4">
+                <form class="space-y-4" @submit.prevent="submit">
                     <div>
                         <label for="title" class="mb-1 block font-medium">
                             Task title
@@ -174,8 +259,8 @@ function destroy(task) {
                     <div class="flex justify-end gap-3">
                         <button
                             type="button"
-                            @click="isCreateModalOpen = false"
                             class="rounded-md border border-gray-300 px-4 py-2 font-medium text-gray-700 hover:bg-gray-100"
+                            @click="closeCreateModal"
                         >
                             Cancel
                         </button>
@@ -192,22 +277,40 @@ function destroy(task) {
             </div>
         </section>
 
-        <section>
-            <h2 class="mb-4 text-xl font-semibold">My Tasks</h2>
+        <section class="space-y-8">
+            <h2 class="text-xl font-semibold">My Tasks</h2>
 
             <div v-if="tasks.length === 0" class="rounded-lg border p-6">
                 You haven't created any tasks yet.
             </div>
 
-            <div v-else class="space-y-4">
+            <section
+                v-for="category in taskCategories"
+                :key="category.title"
+                class="space-y-4"
+            >
+                <h3 class="text-lg font-semibold">
+                    {{ category.title }}
+                    <span class="text-sm font-normal text-gray-500">
+                        ({{ category.tasks.length }})
+                    </span>
+                </h3>
+
+                <p
+                    v-if="category.tasks.length === 0"
+                    class="rounded-lg border border-dashed p-4 text-sm text-gray-500"
+                >
+                    No tasks in this category.
+                </p>
+
                 <article
-                    v-for="task in tasks"
+                    v-for="task in category.tasks"
                     :key="task.id"
                     class="rounded-lg border p-4"
                 >
                     <div class="flex items-start justify-between gap-4">
                         <div class="min-w-0 flex-1">
-                            <h3
+                            <h4
                                 class="text-lg font-semibold"
                                 :class="{
                                     'line-through text-gray-500':
@@ -215,7 +318,7 @@ function destroy(task) {
                                 }"
                             >
                                 {{ task.title }}
-                            </h3>
+                            </h4>
 
                             <p v-if="task.description" class="mt-2">
                                 {{ task.description }}
@@ -230,7 +333,7 @@ function destroy(task) {
                                 :class="
                                     task.completed_at
                                         ? 'text-green-600'
-                                        : new Date(task.due_at) < new Date()
+                                        : isPastDue(task)
                                           ? 'text-red-600'
                                           : 'text-amber-600'
                                 "
@@ -238,7 +341,7 @@ function destroy(task) {
                                 {{
                                     task.completed_at
                                         ? "Completed"
-                                        : new Date(task.due_at) < new Date()
+                                        : isPastDue(task)
                                           ? "Overdue"
                                           : "Pending"
                                 }}
@@ -247,32 +350,32 @@ function destroy(task) {
 
                         <button
                             type="button"
-                            @click="destroy(task)"
                             class="shrink-0 rounded-md border px-3 py-2 text-sm font-medium"
+                            @click="destroy(task)"
                         >
                             x
                         </button>
                     </div>
 
-                    <div class="flex items-start justify-between mt-5 mb-3">
+                    <div class="mt-5 mb-3 flex items-start justify-between">
                         <button
                             type="button"
-                            @click="toggleCompletion(task)"
                             class="shrink-0 rounded-md border px-3 py-2 text-sm font-medium"
+                            @click="toggleCompletion(task)"
                         >
                             {{ task.completed_at ? "Undo" : "Complete" }}
                         </button>
 
                         <button
                             type="button"
-                            @click="startEditing(task)"
                             class="shrink-0 rounded-md border px-3 py-2 text-sm font-medium"
+                            @click="startEditing(task)"
                         >
                             Edit
                         </button>
                     </div>
                 </article>
-            </div>
+            </section>
         </section>
 
         <section>
@@ -372,8 +475,8 @@ function destroy(task) {
                         <div class="mt-6 flex justify-end gap-3">
                             <button
                                 type="button"
-                                @click="closeEditModal"
                                 class="rounded-md border border-gray-300 bg-white px-4 py-2 font-medium text-gray-700 hover:bg-gray-100"
+                                @click="closeEditModal"
                             >
                                 Cancel
                             </button>

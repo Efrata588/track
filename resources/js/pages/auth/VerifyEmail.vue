@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
+import { CheckCircle2 } from '@lucide/vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
@@ -24,10 +25,15 @@ defineProps<{
 
     <div
         v-if="status === 'verification-link-sent'"
-        class="mb-4 text-center text-sm font-medium text-green-600"
+        class="mb-6 flex items-start gap-2.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-700 dark:text-emerald-400"
     >
-        A new verification link has been sent to the email address you provided
-        during registration.
+        <CheckCircle2
+            class="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400"
+        />
+        <span>
+            A new verification link has been sent to the email address you
+            provided during registration.
+        </span>
     </div>
 
     <Form
@@ -35,7 +41,11 @@ defineProps<{
         class="space-y-6 text-center"
         v-slot="{ processing }"
     >
-        <Button :disabled="processing" variant="secondary">
+        <Button
+            :disabled="processing"
+            variant="secondary"
+            class="w-full font-medium"
+        >
             <Spinner v-if="processing" />
             Resend verification email
         </Button>

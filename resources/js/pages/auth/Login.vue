@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
+import { CheckCircle2 } from '@lucide/vue';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
 import TextLink from '@/components/TextLink.vue';
@@ -30,9 +31,12 @@ defineProps<{
 
     <div
         v-if="status"
-        class="mb-4 text-center text-sm font-medium text-green-600"
+        class="mb-6 flex items-center gap-2.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-700 dark:text-emerald-400"
     >
-        {{ status }}
+        <CheckCircle2
+            class="size-4 shrink-0 text-emerald-600 dark:text-emerald-400"
+        />
+        <span>{{ status }}</span>
     </div>
 
     <Form
@@ -41,7 +45,7 @@ defineProps<{
         v-slot="{ errors, processing }"
         class="flex flex-col gap-6"
     >
-        <div class="grid gap-6">
+        <div class="grid gap-5">
             <div class="grid gap-2">
                 <Label for="email">Email address</Label>
                 <Input
@@ -63,7 +67,7 @@ defineProps<{
                     <TextLink
                         v-if="canResetPassword"
                         :href="request()"
-                        class="text-sm"
+                        class="text-xs"
                         :tabindex="5"
                     >
                         Forgot your password?
@@ -81,7 +85,10 @@ defineProps<{
             </div>
 
             <div class="flex items-center justify-between">
-                <Label for="remember" class="flex items-center space-x-3">
+                <Label
+                    for="remember"
+                    class="flex cursor-pointer items-center space-x-2.5 text-sm text-muted-foreground hover:text-foreground"
+                >
                     <Checkbox id="remember" name="remember" :tabindex="3" />
                     <span>Remember me</span>
                 </Label>
@@ -89,7 +96,7 @@ defineProps<{
 
             <Button
                 type="submit"
-                class="mt-4 w-full"
+                class="mt-2 w-full font-medium"
                 :tabindex="4"
                 :disabled="processing"
                 data-test="login-button"
@@ -101,7 +108,9 @@ defineProps<{
 
         <div class="text-center text-sm text-muted-foreground">
             Don't have an account?
-            <TextLink :href="register()" :tabindex="5">Sign up</TextLink>
+            <TextLink :href="register()" :tabindex="5" class="ml-1"
+                >Sign up</TextLink
+            >
         </div>
     </Form>
 </template>

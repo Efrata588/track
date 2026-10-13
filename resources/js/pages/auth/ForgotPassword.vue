@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
+import { CheckCircle2 } from '@lucide/vue';
 import InputError from '@/components/InputError.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
@@ -26,9 +27,12 @@ defineProps<{
 
     <div
         v-if="status"
-        class="mb-4 text-center text-sm font-medium text-green-600"
+        class="mb-6 flex items-center gap-2.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-700 dark:text-emerald-400"
     >
-        {{ status }}
+        <CheckCircle2
+            class="size-4 shrink-0 text-emerald-600 dark:text-emerald-400"
+        />
+        <span>{{ status }}</span>
     </div>
 
     <div class="space-y-6">
@@ -46,9 +50,9 @@ defineProps<{
                 <InputError :message="errors.email" />
             </div>
 
-            <div class="my-6 flex items-center justify-start">
+            <div class="mt-6">
                 <Button
-                    class="w-full"
+                    class="w-full font-medium"
                     :disabled="processing"
                     data-test="email-password-reset-link-button"
                 >

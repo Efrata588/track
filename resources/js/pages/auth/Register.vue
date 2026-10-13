@@ -31,7 +31,7 @@ defineOptions({
         v-slot="{ errors, processing }"
         class="flex flex-col gap-6"
     >
-        <div class="grid gap-6">
+        <div class="grid gap-5">
             <div class="grid gap-2">
                 <Label for="name">Name</Label>
                 <Input
@@ -91,7 +91,7 @@ defineOptions({
 
             <Button
                 type="submit"
-                class="mt-2 w-full"
+                class="mt-2 w-full font-medium"
                 tabindex="5"
                 :disabled="processing"
                 data-test="register-user-button"
@@ -103,10 +103,7 @@ defineOptions({
 
         <div class="text-center text-sm text-muted-foreground">
             Already have an account?
-            <TextLink
-                :href="login()"
-                class="underline underline-offset-4"
-                :tabindex="6"
+            <TextLink :href="login()" :tabindex="6" class="ml-1"
                 >Log in</TextLink
             >
         </div>

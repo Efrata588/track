@@ -34,7 +34,7 @@ class TaskController extends Controller
         $request->user()->tasks()->create($validated);
 
         return redirect()
-            ->route('tasks.index')
+            ->route('dashboard')
             ->with('success', 'Task created successfully.');
     }
     public function toggleCompletion(Request $request, int $task):RedirectResponse{
@@ -50,7 +50,7 @@ class TaskController extends Controller
         $task->save();
 
         return redirect()
-            ->route('tasks.index')
+            ->route('dashboard')
             ->with('success','Task completion updated.');
     }
     public function update(Request $request, int $task): RedirectResponse{
@@ -66,7 +66,7 @@ class TaskController extends Controller
 
         $task->update($validated);
         return redirect()
-            ->route('tasks.index')
+            ->route('dashboard')
             ->with('success','Task updated successfully.');
     }
     public function destroy(Request $request,int $task): RedirectResponse{
@@ -76,7 +76,7 @@ class TaskController extends Controller
 
         $task->delete();
         return redirect()
-            ->route('tasks.index')
+            ->route('dashboard')
             ->with('success','Task deleted successfully.');
     }
 }

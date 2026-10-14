@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PasswordResetController;
-use App\Http\Controllers\TaskController;
+use App\Http\Controllers\Api\TaskController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -15,7 +15,17 @@ Route::middleware('throttle:5,1')->group(function () {
 
 // Protected
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/user', fn (Request $request) => $request->user());
+    Route::get('/user', function (Request $request) {
+        $user = $request->user();
+        return response()->json([
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'email_verified_at' => $user->email_verified_at,
+            'user' => $user,
+            'data' => $user,
+        ]);
+    });
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::get('/tasks', [TaskController::class, 'index']);

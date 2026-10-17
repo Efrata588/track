@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'Welcome')->name('home');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth','verified','track.activity'])->group(function () {
     Route::get('dashboard', [TaskController::class, 'index'])->name('dashboard');
 
     Route::get('/tasks',[TaskController::class,'index'])
@@ -21,6 +21,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::delete('/tasks/{task}',[TaskController::class,'destroy'])
         ->name('tasks.destroy');
+});
+
+Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
+    Route::get('/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
 });
 
 require __DIR__.'/settings.php';

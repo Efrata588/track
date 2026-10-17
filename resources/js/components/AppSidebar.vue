@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import { LayoutGrid } from '@lucide/vue';
+import { Link, usePage } from '@inertiajs/vue3';
+import { LayoutGrid, ShieldCheck } from '@lucide/vue';
+import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -15,6 +16,17 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
+
+const page = usePage();
+const isAdmin = computed(() => page.props.auth?.user?.role === 'admin');
+
+const adminNavItems: NavItem[] = [
+    {
+        title: 'Admin Dashboard',
+        href: typeof route === 'function' ? (route as any)('admin.dashboard') : '/admin/dashboard',
+        icon: ShieldCheck,
+    },
+];
 
 const mainNavItems: NavItem[] = [
     {
@@ -40,8 +52,12 @@ const mainNavItems: NavItem[] = [
         </SidebarHeader>
 
         <SidebarContent>
+            <NavMain
+                v-if="$page.props.auth?.user && $page.props.auth.user.role === 'admin'"
+                :items="adminNavItems"
+                label="Admin"
+            />
             <NavMain :items="mainNavItems" />
-            <!-- TODO(admin): render <NavMain :items="adminNavItems" label="Admin" v-if="isAdmin" /> -->
         </SidebarContent>
 
         <SidebarFooter>

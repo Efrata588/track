@@ -8,13 +8,13 @@ use Illuminate\Support\Facades\Route;
 
 // Public
 Route::middleware('throttle:5,1')->group(function () {
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login'])->middleware('track.activity');
     Route::post('/forgot-password', [PasswordResetController::class, 'forgot']);
     Route::post('/reset-password', [PasswordResetController::class, 'reset']);
 });
 
 // Protected
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum','track.activity')->group(function () {
     Route::get('/user', function (Request $request) {
         $user = $request->user();
         return response()->json([
